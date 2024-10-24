@@ -39,7 +39,7 @@ public class Server {
 
         do {
             System.out.println("Digite a palavra a ser descoberta (Exceto a palavra 'desisto'):");
-            WORD = sc.nextLine();
+            WORD = sc.nextLine().toLowerCase();
         } while (WORD.equalsIgnoreCase("desisto"));
 
         try (

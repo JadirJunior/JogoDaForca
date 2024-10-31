@@ -46,12 +46,14 @@ public class ServerThread extends Thread{
                 Optional<User> optionalUser = Server.file.getUserByUserName(new User(username, password, false));
 
                 if (optionalUser == null) {
+                    System.out.println("Thread " + this.getName() + ": O user "+ username + " tentou logar novamente");
                     out.println("Esse usuário já está logado ou logou-se nesta partida.");
                 } else if (optionalUser.isPresent()) {
                     logged = optionalUser.get();
                     System.out.println("Thread " + this.getName() + ": " + logged.getUser() + " autenticou-se");
                     out.println("ok");
                 } else {
+                    System.out.println("Thread " + this.getName() + ": O user "+ username + " tentou logar mas as credenciais eram inválidas");
                     out.println("Credenciais incorretas.");
                 }
             } while (logged == null);

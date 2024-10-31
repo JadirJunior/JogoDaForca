@@ -17,19 +17,37 @@ import java.util.concurrent.TimeUnit;
 
 public class Server {
 
+    //Variável para manuseio do arquivo
     public static volatile FileHandler file;
 
+    //Flag para quando o jogo finalizar
     public static volatile boolean GAME_END = false;
+
+    //Variável que armazenará o usuário vencedor
     public static volatile String WINNER = "";
 
+    //Palavra a ser descoberta
     public static String WORD;
-    private static int MAX_PLAYERS = 10;
-    private static int TIMEOUT_WAIT_PLAYERS = 15000; //ms
-    private static int MAX_GAME_TIME = 60;
+
+    //Definir o número máximo de players por partida
+    private final static int MAX_PLAYERS = 10;
+
+    //Tempo para autenticação dos jogadores
+    private final static int TIMEOUT_WAIT_PLAYERS = 30000; //ms
+
+    //Tempo máximo para descobrir a palavra
+    private final static int MAX_GAME_TIME = 60;
+
+    //Flag para armazenar se o jogo já iniciou
+    public static boolean GAME_STARTED = false;
+
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
+
         System.out.println("Server: Jogo da forca");
+
+        // Criando a instância do FileHandler
         file = new FileHandler(new File("src/server/resources/users.txt").getAbsolutePath());
 
         int portNumber = InputValidation.validateIntBetween(
@@ -40,7 +58,7 @@ public class Server {
         do {
             System.out.println("Digite a palavra a ser descoberta (Exceto a palavra 'desisto'):");
             WORD = sc.nextLine().toLowerCase();
-        } while (WORD.equalsIgnoreCase("desisto"));
+        } while (WORD.equalsIgnoreCase("desisto") || WORD.trim().isEmpty());
 
         try (
                 ServerSocket serverSocket = new ServerSocket(portNumber);
@@ -63,6 +81,8 @@ public class Server {
                 }
             }
 
+            GAME_STARTED = true;
+
             //Limpar usuários logados
             file.resetFile();
 
@@ -78,6 +98,9 @@ public class Server {
         } catch (InterruptedException e) {
             System.out.println("Main: Ocorreu um erro em awaitTermination");
             System.exit(3);
+        } finally {
+            // Caso por algum motivo não passe por aquele outro reset.
+            file.resetFile();
         }
 
 

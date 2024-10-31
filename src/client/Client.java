@@ -32,25 +32,36 @@ public class Client {
             boolean logged = false;
 
             do {
+                // Enviando as credenciais para login
                 System.out.print("Username: ");
                 out.println(sc.nextLine());
                 System.out.print("Password: ");
                 out.println(sc.nextLine());
 
+                // Recuperando os status
                 String status = in.readLine();
 
-                if (status.equalsIgnoreCase("ok")) {
-                    System.out.println("Logado com sucesso.");
-                    logged = true;
-                } else {
-                    attempts--;
-                    System.out.println(status);
-                    if (attempts == 0) {
-                        System.out.println("Acabaram suas tentativas.");
+                // Tratando os casos
+                switch (status.toLowerCase()) {
+                    // Okay
+                    case "ok":
+                        System.out.println("Logado com sucesso.");
+                        logged = true;
+                        break;
+                    // Jogo já iniciou
+                    case "game_start":
+                        System.out.println("O tempo para autenticação finalizou, o jogo já iniciou.");
                         System.exit(0);
-                    } else {
-                        System.out.println("Tentativas restantes: " + attempts);
-                    }
+                    // Credenciais inválidas
+                    default:
+                        attempts--;
+                        System.out.println(status);
+                        if (attempts == 0) {
+                            System.out.println("Acabaram suas tentativas.");
+                            System.exit(0);
+                        } else {
+                            System.out.println("Tentativas restantes: " + attempts);
+                        }
                 }
 
             } while(!logged);
@@ -58,6 +69,8 @@ public class Client {
             System.out.println("Aguarde o jogo começar...");
             System.out.println(in.readLine());
             System.out.println("Em qualquer momento pode digitar 'Desisto' para sair do jogo");
+
+            // Jogo comecou
 
             String guess = "";
             do {

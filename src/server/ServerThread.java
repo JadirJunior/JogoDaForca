@@ -31,9 +31,18 @@ public class ServerThread extends Thread{
 
             User logged = null;
             do {
+                // Recebendo credenciais do usuário
                 String username = in.readLine();
                 String password = in.readLine();
 
+                // Verificando se o jogo comecou
+                if (Server.GAME_STARTED) {
+                    out.println("game_start");
+                    System.out.println("Thread " + this.getName() + " tentou autenticar-se mas o jogo já foi iniciado.");
+                    return;
+                }
+
+                // Recuperando o usuário do arquivo txt
                 Optional<User> optionalUser = Server.file.getUserByUserName(new User(username, password, false));
 
                 if (optionalUser == null) {
@@ -48,6 +57,7 @@ public class ServerThread extends Thread{
             } while (logged == null);
 
 
+            // Aguardando o jogo iniciar
             synchronized (this) {
                 try {
                     wait();
@@ -57,20 +67,30 @@ public class ServerThread extends Thread{
                 }
             }
 
+            // Setando a palavra escondida
             String actualWord = "-".repeat(Server.WORD.length());
             StringBuilder sb = new StringBuilder(actualWord);
             //O jogo começou!
             while (true) {
                 out.println(sb);
 
+                // Recebendo palpite
                 String guess = in.readLine();
 
+                if (guess == null || guess.trim().isEmpty()) {
+                    out.println("incorrect");
+                    System.out.println("Thread " + this.getName() + ": O user " + logged.getUser() + " enviou o palpite vazio e estava incorreto (" + Server.WORD + ")");
+                    continue;
+                }
+
+                // Verificando a desistência
                 if (guess.equalsIgnoreCase("desisto")) {
                     out.println("desistencia");
                     System.out.println("Thread " + this.getName() + ": O jogador " + logged.getUser() + " desistiu de jogar.");
                     break;
                 }
 
+                // Verificando se o jogo já finalizou
                 if (Server.GAME_END) {
 
                     if (Server.WINNER.trim().equalsIgnoreCase("")) {
@@ -82,8 +102,9 @@ public class ServerThread extends Thread{
                 }
 
                 boolean isWinner = false, correct = false;
+                // Quando envia apenas uma letra
                 if (guess.length() == 1) {
-                    //Enviou apenas uma letra
+
                     for (int i = 0; i < Server.WORD.length(); i++) {
                         if (Server.WORD.charAt(i) == guess.charAt(0)) {
                             //Caso essa letra exista na palavra escolhida pelo servidor
@@ -101,6 +122,7 @@ public class ServerThread extends Thread{
                     if (sb.toString().equals(Server.WORD)) {
                         isWinner = true;
                     }
+
                 } else {
                     //Enviou a palavra inteira
                     if (Server.WORD.equals(guess)) {
@@ -111,14 +133,18 @@ public class ServerThread extends Thread{
 
                 System.out.println("Thread " + this.getName() + ": O user " + logged.getUser() + " enviou o palpite: " + guess);
                 if (isWinner) {
+                    // Venceu o jogo
                     Server.GAME_END = true;
                     Server.WINNER = logged.getUser();
                     out.println("winner");
                     System.out.println("Thread " + this.getName() + ": O user " + logged.getUser() + " enviou o palpite: " + guess + " e venceu!");
+                    break;
                 } else if (correct) {
+                    // Acertou a letra
                     out.println("correct");
                     System.out.println("Thread " + this.getName() + ": O user " + logged.getUser() + " enviou o palpite: " + guess + " e estava correto (" + Server.WORD + ")");
                 } else {
+                    // Errou a letra
                     out.println("incorrect");
                     System.out.println("Thread " + this.getName() + ": O user " + logged.getUser() + " enviou o palpite: " + guess + " e estava incorreto (" + Server.WORD + ")");
                 }
